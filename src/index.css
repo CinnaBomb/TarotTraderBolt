@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom background styles */
+.app-background {
+  background-image: url('./assets/images/login_background.png');
+  background-size: 50% auto; 
+  background-position: center;
+  background-repeat: repeat;  
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+}

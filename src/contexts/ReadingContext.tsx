@@ -68,23 +68,17 @@ export const ReadingProvider: React.FC<ReadingProviderProps> = ({ children }) =>
     if (!user) return;
 
     try {
-      // Load completed readings
+      // Load all readings (the database doesn't have reading_cards table, so we'll work with cards_drawn JSONB)
       const { data: readingsData, error: readingsError } = await supabase
         .from('readings')
-        .select(`
-          *,
-          reading_cards (
-            *,
-            cards (*)
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (readingsError) throw readingsError;
 
       // Load current in-progress reading
-      const inProgressReading = readingsData?.find(r => r.status === 'in-progress');
+      const inProgressReading = readingsData?.find(r => r.status === 'in_progress');
       const completedReadings = readingsData?.filter(r => r.status === 'completed') || [];
 
       // Transform data
@@ -102,19 +96,26 @@ export const ReadingProvider: React.FC<ReadingProviderProps> = ({ children }) =>
   };
 
   const transformReadingData = (readingData: any): Reading => {
-    const cards = readingData.reading_cards?.map((rc: any) => ({
-      ...rc.cards,
-      reversed: rc.reversed,
-      position: rc.position,
-    })) || [];
+    // Parse cards_drawn from JSONB, ensuring it's an array
+    let cards = [];
+    try {
+      if (readingData.cards_drawn) {
+        cards = Array.isArray(readingData.cards_drawn) 
+          ? readingData.cards_drawn 
+          : JSON.parse(readingData.cards_drawn);
+      }
+    } catch (error) {
+      console.error('Error parsing cards_drawn:', error);
+      cards = [];
+    }
 
     return {
       id: readingData.id,
-      title: readingData.title,
-      type: readingData.type,
-      cards,
+      title: readingData.name,
+      type: readingData.spread_type,
+      cards: cards,
       cards_drawn: cards,
-      status: readingData.status,
+      status: readingData.status === 'in_progress' ? 'in-progress' : readingData.status,
       createdAt: new Date(readingData.created_at),
       interpretation: readingData.interpretation,
     };
@@ -128,9 +129,9 @@ export const ReadingProvider: React.FC<ReadingProviderProps> = ({ children }) =>
         .from('readings')
         .insert({
           user_id: user.id,
-          title,
-          type,
-          status: 'in-progress',
+          name: title, // Use 'name' instead of 'title'
+          spread_type: type, // Use 'spread_type' instead of 'type'
+          status: 'in_progress', // Use 'in_progress' instead of 'in-progress'
         })
         .select()
         .single();
@@ -139,11 +140,11 @@ export const ReadingProvider: React.FC<ReadingProviderProps> = ({ children }) =>
 
       const newReading: Reading = {
         id: data.id,
-        title: data.title,
-        type: data.type,
+        title: data.name, // Map 'name' to 'title' for our interface
+        type: data.spread_type, // Map 'spread_type' to 'type' for our interface
         cards: [],
         cards_drawn: [],
-        status: 'in-progress',
+        status: 'in-progress', // Keep our interface consistent
         createdAt: new Date(data.created_at),
       };
 
@@ -164,28 +165,23 @@ export const ReadingProvider: React.FC<ReadingProviderProps> = ({ children }) =>
     if (!currentReading || !user) return;
 
     try {
-      // Get random card from database
+      // Get the IDs of cards already drawn in this reading
+      const drawnCardIds = currentReading.cards.map(card => card.id);
+
+      // Get random card from database, excluding already drawn cards
       const { data: cards, error: cardsError } = await supabase
-        .from('cards')
-        .select('*');
+        .from('tarot_cards')
+        .select('*')
+        .not('id', 'in', `(${drawnCardIds.join(',')})`);
 
       if (cardsError) throw cardsError;
-      if (!cards || cards.length === 0) return;
+      if (!cards || cards.length === 0) {
+        console.error('No more available cards to draw');
+        return;
+      }
 
       const randomCard = cards[Math.floor(Math.random() * cards.length)];
       const reversed = Math.random() < 0.3; // 30% chance of reversed
-
-      // Insert reading card
-      const { error: insertError } = await supabase
-        .from('reading_cards')
-        .insert({
-          reading_id: currentReading.id,
-          card_id: randomCard.id,
-          position,
-          reversed,
-        });
-
-      if (insertError) throw insertError;
 
       // Update local state
       const cardWithPosition: Card = {
@@ -194,16 +190,40 @@ export const ReadingProvider: React.FC<ReadingProviderProps> = ({ children }) =>
         position,
       };
 
+      const updatedCards = [...currentReading.cards, cardWithPosition];
+      
+      // Format the cards for database storage
+      const cardsForDB = updatedCards.map(card => ({
+        id: card.id,
+        name: card.name,
+        suit: card.suit,
+        meaning: card.meaning,
+        reversed: card.reversed,
+        position: card.position
+      }));
+
+      // Update database with the new cards_drawn array
+      const { error: updateError } = await supabase
+        .from('readings')
+        .update({ 
+          cards_drawn: cardsForDB
+        })
+        .eq('id', currentReading.id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
       const updatedReading = {
         ...currentReading,
-        cards: [...currentReading.cards, cardWithPosition],
-        cards_drawn: [...currentReading.cards_drawn, cardWithPosition],
+        cards: updatedCards,
+        cards_drawn: updatedCards,
       };
 
       setCurrentReading(updatedReading);
 
       // Auto-complete reading when all 3 cards are drawn
-      if (updatedReading.cards.length === 3) {
+      if (updatedCards.length === 3) {
         setTimeout(() => {
           generateAIInterpretation(updatedReading);
         }, 500);
@@ -237,7 +257,7 @@ The cards suggest a journey from ${pastCard.name.toLowerCase()} through ${presen
         .update({ 
           interpretation,
           status: 'completed',
-          updated_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
         })
         .eq('id', reading.id);
 
@@ -263,7 +283,7 @@ The cards suggest a journey from ${pastCard.name.toLowerCase()} through ${presen
         .from('readings')
         .update({ 
           status: 'completed',
-          updated_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
         })
         .eq('id', currentReading.id);
 

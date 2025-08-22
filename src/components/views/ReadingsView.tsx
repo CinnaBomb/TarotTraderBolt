@@ -3,8 +3,12 @@ import { Star, Calendar } from 'lucide-react';
 import { useReading } from '../../contexts/ReadingContext';
 import { useAuth } from '../../contexts/AuthContext';
 
-const ReadingsView: React.FC = () => {
-  const { readings, currentReading, startNewReading } = useReading();
+interface ReadingsViewProps {
+  onViewChange: (view: string) => void;
+}
+
+const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
+  const { readings, currentReading } = useReading();
   const { user } = useAuth();
 
   const allReadings = currentReading ? [currentReading, ...readings] : readings;
@@ -25,7 +29,7 @@ const ReadingsView: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-yellow-400">Your Readings</h1>
         <button 
-          onClick={() => startNewReading('Past, Present, Future', 'Three Card Spread')}
+          onClick={() => onViewChange('spread-selection')}
           className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
           New Reading
@@ -75,7 +79,7 @@ const ReadingsView: React.FC = () => {
           </div>
           <p className="text-gray-400 mb-4">No readings yet</p>
           <button 
-            onClick={() => startNewReading('Past, Present, Future', 'Three Card Spread')}
+            onClick={() => onViewChange('spread-selection')}
             className="text-purple-400 hover:text-purple-300 transition-colors font-medium"
           >
             Start your first reading

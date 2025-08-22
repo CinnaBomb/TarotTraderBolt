@@ -13,36 +13,57 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface Database {
   public: {
     Tables: {
-      profiles: {
+      user_profiles: {
         Row: {
           id: string;
-          name: string;
-          email: string;
+          username: string;
+          display_name: string;
+          avatar_url: string | null;
+          bio: string;
+          level: number;
+          experience_points: number;
+          total_cards: number;
+          total_trades: number;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id: string;
-          name: string;
-          email: string;
+          username: string;
+          display_name: string;
+          avatar_url?: string | null;
+          bio?: string;
+          level?: number;
+          experience_points?: number;
+          total_cards?: number;
+          total_trades?: number;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          name?: string;
-          email?: string;
+          username?: string;
+          display_name?: string;
+          avatar_url?: string | null;
+          bio?: string;
+          level?: number;
+          experience_points?: number;
+          total_cards?: number;
+          total_trades?: number;
           created_at?: string;
           updated_at?: string;
         };
       };
-      cards: {
+      tarot_cards: {
         Row: {
           id: string;
           name: string;
           suit: string;
           meaning: string;
           card_type: string;
+          rarity: string;
+          image_url: string | null;
+          description: string;
           created_at: string;
         };
         Insert: {
@@ -51,6 +72,9 @@ export interface Database {
           suit: string;
           meaning: string;
           card_type?: string;
+          rarity?: string;
+          image_url?: string | null;
+          description?: string;
           created_at?: string;
         };
         Update: {
@@ -59,6 +83,9 @@ export interface Database {
           suit?: string;
           meaning?: string;
           card_type?: string;
+          rarity?: string;
+          image_url?: string | null;
+          description?: string;
           created_at?: string;
         };
       };
@@ -67,6 +94,7 @@ export interface Database {
           id: string;
           user_id: string;
           card_id: string;
+          quantity: number;
           rarity: string;
           obtained_at: string;
         };
@@ -74,6 +102,7 @@ export interface Database {
           id?: string;
           user_id: string;
           card_id: string;
+          quantity?: number;
           rarity?: string;
           obtained_at?: string;
         };
@@ -81,6 +110,7 @@ export interface Database {
           id?: string;
           user_id?: string;
           card_id?: string;
+          quantity?: number;
           rarity?: string;
           obtained_at?: string;
         };
@@ -93,6 +123,7 @@ export interface Database {
           type: string;
           status: string;
           interpretation: string | null;
+          card_positions: any;
           created_at: string;
           updated_at: string;
         };
@@ -100,9 +131,10 @@ export interface Database {
           id?: string;
           user_id: string;
           title: string;
-          type: string;
+          type?: string;
           status?: string;
           interpretation?: string | null;
+          card_positions?: any;
           created_at?: string;
           updated_at?: string;
         };
@@ -113,34 +145,9 @@ export interface Database {
           type?: string;
           status?: string;
           interpretation?: string | null;
+          card_positions?: any;
           created_at?: string;
           updated_at?: string;
-        };
-      };
-      reading_cards: {
-        Row: {
-          id: string;
-          reading_id: string;
-          card_id: string;
-          position: string;
-          reversed: boolean;
-          drawn_at: string;
-        };
-        Insert: {
-          id?: string;
-          reading_id: string;
-          card_id: string;
-          position: string;
-          reversed?: boolean;
-          drawn_at?: string;
-        };
-        Update: {
-          id?: string;
-          reading_id?: string;
-          card_id?: string;
-          position?: string;
-          reversed?: boolean;
-          drawn_at?: string;
         };
       };
     };

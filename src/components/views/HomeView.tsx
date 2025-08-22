@@ -3,8 +3,12 @@ import { Layers, Sparkles, Star } from 'lucide-react';
 import { useReading } from '../../contexts/ReadingContext';
 import { useAuth } from '../../contexts/AuthContext';
 
-const HomeView: React.FC = () => {
-  const { currentReading, continueReading, startNewReading } = useReading();
+interface HomeViewProps {
+  onViewChange: (view: string) => void;
+}
+
+const HomeView: React.FC<HomeViewProps> = ({ onViewChange }) => {
+  const { currentReading, continueReading } = useReading();
   const { user } = useAuth();
 
   return (
@@ -12,7 +16,7 @@ const HomeView: React.FC = () => {
       {/* Action Cards */}
       <div className="grid grid-cols-2 gap-4">
         <div 
-          onClick={() => startNewReading('Past, Present, Future', 'Three Card Spread')}
+          onClick={() => onViewChange('spread-selection')}
           className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:bg-slate-750 transition-colors cursor-pointer group"
         >
           <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-400 transition-colors">
@@ -78,7 +82,7 @@ const HomeView: React.FC = () => {
             </div>
             <p className="text-gray-400 mb-4">No active reading</p>
             <button 
-              onClick={() => startNewReading('Past, Present, Future', 'Three Card Spread')}
+              onClick={() => onViewChange('spread-selection')}
               className="text-purple-400 hover:text-purple-300 transition-colors font-medium"
             >
               Start a new reading
