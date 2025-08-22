@@ -33,6 +33,9 @@ interface ReadingContextType {
   isReadingModalOpen: boolean;
   setIsReadingModalOpen: (open: boolean) => void;
   loadReadings: () => Promise<void>;
+  setCurrentReading: (reading: Reading | null) => void;
+  deleteReading: (readingId: string) => Promise<void>;
+  openReading: (reading: Reading) => void;
 }
 
 const ReadingContext = createContext<ReadingContextType | undefined>(undefined);
@@ -115,7 +118,7 @@ export const ReadingProvider: React.FC<ReadingProviderProps> = ({ children }) =>
       type: readingData.spread_type,
       cards: cards,
       cards_drawn: cards,
-      status: readingData.status === 'in_progress' ? 'in-progress' : readingData.status,
+      status: readingData.status === 'in_progress' ? 'in-progress' : 'completed',
       createdAt: new Date(readingData.created_at),
       interpretation: readingData.interpretation,
     };
@@ -302,6 +305,33 @@ The cards suggest a journey from ${pastCard.name.toLowerCase()} through ${presen
     }
   };
 
+  const deleteReading = async (readingId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('readings')
+        .delete()
+        .eq('id', readingId);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setReadings(prev => prev.filter(r => r.id !== readingId));
+      if (currentReading?.id === readingId) {
+        setCurrentReading(null);
+        setIsReadingModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Error deleting reading:', error);
+    }
+  };
+
+  const openReading = (reading: Reading) => {
+    setCurrentReading(reading);
+    setIsReadingModalOpen(true);
+  };
+
   return (
     <ReadingContext.Provider value={{
       currentReading,
@@ -313,6 +343,9 @@ The cards suggest a journey from ${pastCard.name.toLowerCase()} through ${presen
       isReadingModalOpen,
       setIsReadingModalOpen,
       loadReadings,
+      setCurrentReading,
+      deleteReading,
+      openReading,
     }}>
       {children}
     </ReadingContext.Provider>

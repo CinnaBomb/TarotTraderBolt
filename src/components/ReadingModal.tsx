@@ -1,6 +1,7 @@
 import React from 'react';
-import { X, Star, RotateCcw } from 'lucide-react';
+import { X, Star, RotateCcw, Trash } from 'lucide-react';
 import { useReading } from '../contexts/ReadingContext';
+import { Card } from '../contexts/ReadingContext';
 
 const ReadingModal: React.FC = () => {
   const { 
@@ -8,7 +9,9 @@ const ReadingModal: React.FC = () => {
     isReadingModalOpen, 
     setIsReadingModalOpen, 
     drawCard,
-    completeReading 
+    completeReading,
+    setCurrentReading,
+    deleteReading
   } = useReading();
 
   if (!isReadingModalOpen || !currentReading) return null;
@@ -37,18 +40,33 @@ const ReadingModal: React.FC = () => {
             <h2 className="text-xl font-bold text-yellow-400">{currentReading.title}</h2>
             <p className="text-gray-400 text-sm">{currentReading.type}</p>
           </div>
-          <button 
-            onClick={() => setIsReadingModalOpen(false)}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex gap-4">
+            {currentReading.status === 'completed' && (
+              <button 
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete this reading?')) {
+                    deleteReading(currentReading.id);
+                    setIsReadingModalOpen(false);
+                  }
+                }}
+                className="text-red-400 hover:text-red-300 transition-colors"
+              >
+                <Trash className="w-5 h-5" />
+              </button>
+            )}
+            <button 
+              onClick={() => setIsReadingModalOpen(false)}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-6">
           {/* Card Positions */}
           <div className="grid grid-cols-3 gap-4">
-            {positions.map((position, index) => {
+            {positions.map(position => {
               const card = getCardForPosition(position);
               
               return (
@@ -84,7 +102,7 @@ const ReadingModal: React.FC = () => {
           {currentReading.cards_drawn.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-yellow-400 font-semibold">Your Cards</h3>
-              {currentReading.cards_drawn.map((card, index) => (
+              {currentReading.cards_drawn.map(card => (
                 <div key={card.id} className="bg-slate-700 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Star className="w-4 h-4 text-yellow-400" />

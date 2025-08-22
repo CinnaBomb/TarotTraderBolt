@@ -40,8 +40,11 @@ const HomeView: React.FC<HomeViewProps> = ({ onViewChange }) => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-yellow-400 text-xl font-semibold">Current Reading</h2>
           {user && (
-            <button className="text-purple-400 text-sm hover:text-purple-300 transition-colors">
-            View All
+            <button 
+              onClick={() => onViewChange('readings')}
+              className="text-purple-400 text-sm hover:text-purple-300 transition-colors"
+            >
+              View All
             </button>
           )}
         </div>

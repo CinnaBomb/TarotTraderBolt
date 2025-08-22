@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star, Calendar } from 'lucide-react';
 import { useReading } from '../../contexts/ReadingContext';
 import { useAuth } from '../../contexts/AuthContext';
+import ReadingDetailsModal from '../ReadingDetailsModal';
+import type { Reading } from '../../contexts/ReadingContext';
 
 interface ReadingsViewProps {
   onViewChange: (view: string) => void;
@@ -10,6 +12,7 @@ interface ReadingsViewProps {
 const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
   const { readings, currentReading } = useReading();
   const { user } = useAuth();
+  const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
 
   const allReadings = currentReading ? [currentReading, ...readings] : readings;
 
@@ -39,7 +42,11 @@ const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
       {allReadings.length > 0 ? (
         <div className="space-y-4">
           {allReadings.map((reading) => (
-            <div key={reading.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-colors cursor-pointer">
+            <div 
+              key={reading.id} 
+              onClick={() => setSelectedReading(reading)}
+              className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-colors cursor-pointer"
+            >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="text-white font-semibold">{reading.title}</h3>
@@ -85,6 +92,14 @@ const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
             Start your first reading
           </button>
         </div>
+      )}
+
+      {/* Reading Details Modal */}
+      {selectedReading && (
+        <ReadingDetailsModal
+          reading={selectedReading}
+          onClose={() => setSelectedReading(null)}
+        />
       )}
     </div>
   );
