@@ -31,7 +31,7 @@ const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-yellow-400">Your Readings</h1>
-        <button 
+        <button
           onClick={() => onViewChange('spread-selection')}
           className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
@@ -40,10 +40,10 @@ const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
       </div>
 
       {allReadings.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="readings-list">
           {allReadings.map((reading) => (
-            <div 
-              key={reading.id} 
+            <div
+              key={reading.id}
               onClick={() => setSelectedReading(reading)}
               className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-750 transition-colors cursor-pointer"
             >
@@ -52,21 +52,24 @@ const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
                   <h3 className="text-white font-semibold">{reading.title}</h3>
                   <p className="text-gray-400 text-sm">{reading.type}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  reading.status === 'in-progress' 
-                    ? 'bg-yellow-400/10 text-yellow-400' 
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${reading.status === 'in-progress'
+                    ? 'bg-yellow-400/10 text-yellow-400'
                     : 'bg-green-400/10 text-green-400'
-                }`}>
+                  }`}>
                   {reading.status === 'in-progress' ? 'In Progress' : 'Completed'}
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-gray-400 text-sm">
                   <Calendar className="w-4 h-4" />
-                  {reading.createdAt.toLocaleDateString()}
+                  {reading.createdAt.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   {reading.cards.slice(0, 3).map((_, index) => (
                     <Star key={index} className="w-4 h-4 text-yellow-400 fill-current" />
@@ -85,7 +88,7 @@ const ReadingsView: React.FC<ReadingsViewProps> = ({ onViewChange }) => {
             <Star className="w-8 h-8 text-gray-400" />
           </div>
           <p className="text-gray-400 mb-4">No readings yet</p>
-          <button 
+          <button
             onClick={() => onViewChange('spread-selection')}
             className="text-purple-400 hover:text-purple-300 transition-colors font-medium"
           >

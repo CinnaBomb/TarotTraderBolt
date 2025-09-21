@@ -48,7 +48,11 @@ const ReadingDetailsModal: React.FC<ReadingDetailsModalProps> = ({ reading, onCl
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2 text-gray-400 text-sm">
             <Calendar className="w-4 h-4" />
-            {reading.createdAt.toLocaleDateString()}
+            {reading.createdAt.toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            })}
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-medium ${
             reading.status === 'in-progress' 

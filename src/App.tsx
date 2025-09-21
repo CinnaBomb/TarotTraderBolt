@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ReadingProvider } from './contexts/ReadingContext';
+import { CardCreationProvider } from './contexts/CardCreationContext';
 import Header from './components/Header';
 import MainContent from './components/MainContent';
 import BottomNavigation from './components/BottomNavigation';
 import AuthModal from './components/AuthModal';
 import ReadingModal from './components/ReadingModal';
+import CardCreationModal from './components/CardCreationModal';
 
 function AppContent() {
   const [currentView, setCurrentView] = useState('home');
@@ -56,6 +58,7 @@ function AppContent() {
           )}
           
           <ReadingModal />
+          <CardCreationModal />
         </div>
       </div>
     </div>
@@ -66,7 +69,9 @@ function App() {
   return (
     <AuthProvider>
       <ReadingProvider>
-        <AppContent />
+        <CardCreationProvider>
+          <AppContent />
+        </CardCreationProvider>
       </ReadingProvider>
     </AuthProvider>
   );

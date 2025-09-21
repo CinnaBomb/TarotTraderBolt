@@ -33,11 +33,19 @@ const ReadingModal: React.FC = () => {
   const isComplete = currentReading.cards.length === 3;
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-xl p-6 w-full max-w-md border border-slate-700 max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reading-modal-title"
+    >
+      <div 
+        className="bg-slate-800 rounded-xl p-6 w-full max-w-md border border-slate-700 max-h-[90vh] overflow-y-auto"
+        role="document"
+      >
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-xl font-bold text-yellow-400">{currentReading.title}</h2>
+            <h2 id="reading-modal-title" className="text-xl font-bold text-yellow-400">{currentReading.title}</h2>
             <p className="text-gray-400 text-sm">{currentReading.type}</p>
           </div>
           <div className="flex gap-4">
@@ -50,6 +58,7 @@ const ReadingModal: React.FC = () => {
                   }
                 }}
                 className="text-red-400 hover:text-red-300 transition-colors"
+                aria-label="Delete reading"
               >
                 <Trash className="w-5 h-5" />
               </button>
@@ -57,6 +66,7 @@ const ReadingModal: React.FC = () => {
             <button 
               onClick={() => setIsReadingModalOpen(false)}
               className="text-gray-400 hover:text-white transition-colors"
+              aria-label="Close reading modal"
             >
               <X className="w-5 h-5" />
             </button>
@@ -77,6 +87,9 @@ const ReadingModal: React.FC = () => {
                       card ? 'bg-slate-700 border-solid border-purple-500' : 'bg-slate-800'
                     }`}
                     onClick={() => !card && drawCard(position)}
+                    role="button"
+                    aria-label={card ? `Card for ${positionLabels[position]}: ${card.name}` : `Draw card for ${positionLabels[position]}`}
+                    tabIndex={0}
                   >
                     {card ? (
                       <div className="text-center p-2">

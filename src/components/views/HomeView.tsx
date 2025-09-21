@@ -2,6 +2,7 @@ import React from 'react';
 import { Layers, Sparkles, Star } from 'lucide-react';
 import { useReading } from '../../contexts/ReadingContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCardCreation } from '../../contexts/CardCreationContext';
 
 interface HomeViewProps {
   onViewChange: (view: string) => void;
@@ -10,6 +11,7 @@ interface HomeViewProps {
 const HomeView: React.FC<HomeViewProps> = ({ onViewChange }) => {
   const { currentReading, continueReading } = useReading();
   const { user } = useAuth();
+  const { setIsCreatingCard } = useCardCreation();
 
   return (
     <div className="space-y-8">
@@ -26,7 +28,10 @@ const HomeView: React.FC<HomeViewProps> = ({ onViewChange }) => {
           <p className="text-gray-400 text-sm">Start your journey</p>
         </div>
         
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:bg-slate-750 transition-colors cursor-pointer group">
+        <div 
+          onClick={() => setIsCreatingCard(true)}
+          className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:bg-slate-750 transition-colors cursor-pointer group"
+        >
           <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-400 transition-colors">
             <Sparkles className="w-6 h-6 text-white" />
           </div>

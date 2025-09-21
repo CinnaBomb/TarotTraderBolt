@@ -37,33 +37,35 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
       if (!isMainLogin) {
         onClose();
       }
-    } catch (error: any) {
-      console.error('Auth error:', error);
-      console.log('Error message:', error.message);
+    } catch (authError: any) {
+      console.error('Auth error:', authError);
+      console.log('Error message:', authError.message);
       console.log('Setting error state...');
       
       // Handle specific error messages
-      if (error.message?.includes('Invalid login credentials')) {
+      if (authError.message?.includes('Invalid login credentials')) {
         if (isSignUp) {
           setError('Invalid email or password. Please check your credentials and try again.');
         } else {
           setError('❌ Account not found! This email doesn\'t exist in our system. Please click "Sign Up" below to create a new account.');
         }
         console.log('Error state set for invalid credentials');
-      } else if (error.message?.includes('User already registered')) {
+        // Add a timeout to check React state
+        setTimeout(() => {
+          console.log('React error state after 1 second - checking via component state');
+        }, 1000);
+      } else if (authError.message?.includes('User already registered')) {
         setError('✅ This email already has an account! Switch to "Sign In" to log into your existing account.');
-      } else if (error.message?.includes('Password should be at least')) {
+      } else if (authError.message?.includes('Password should be at least')) {
         setError('Password must be at least 6 characters long.');
-      } else if (error.message?.includes('Unable to validate email address')) {
+      } else if (authError.message?.includes('Unable to validate email address')) {
         setError('Please enter a valid email address.');
-      } else if (error.message?.includes('Email not confirmed')) {
+      } else if (authError.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link before signing in.');
-      } else if (error.message?.includes('signup disabled')) {
+      } else if (authError.message?.includes('signup disabled')) {
         setError('Account registration is currently disabled. Please contact support.');
-      } else if (error.message?.includes('Invalid login credentials')) {
-        setError(`Invalid email or password. ${!isSignUp ? 'If you don\'t have an account yet, click "Sign Up" below.' : 'Please check your credentials and try again.'}`);
       } else {
-        setError(error.message || 'An unexpected error occurred. Please try again.');
+        setError(authError.message || 'An unexpected error occurred. Please try again.');
       }
     }
   };
@@ -128,15 +130,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
         </div>
       )}
       
-      <div className="bg-slate-800 rounded-xl p-6 w-full max-w-sm border border-slate-700">
+      <div 
+        className="bg-slate-800 rounded-xl p-6 w-full max-w-sm border border-slate-700"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+        data-testid="auth-modal"
+      >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-yellow-400">
+          <h2 
+            id="auth-modal-title"
+            className="text-xl font-bold text-yellow-400"
+            data-testid="auth-modal-title"
+          >
             {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h2>
           {!isMainLogin && (
             <button 
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors"
+              aria-label="Close modal"
+              data-testid="close-modal-button"
             >
               <X className="w-5 h-5" />
             </button>
@@ -145,14 +159,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-4 bg-red-500/30 border-2 border-red-500/70 rounded-lg animate-pulse">
+          <div 
+            className="mb-4 p-4 bg-red-500/30 border-2 border-red-500/70 rounded-lg animate-pulse"
+            role="alert"
+            aria-label="Authentication error message"
+            data-testid="auth-error-message"
+          >
             <p className="text-red-200 text-sm font-medium">{error}</p>
           </div>
         )}
 
         {/* Success Message */}
         {success && (
-          <div className="mb-4 p-4 bg-green-500/30 border-2 border-green-500/70 rounded-lg">
+          <div 
+            className="mb-4 p-4 bg-green-500/30 border-2 border-green-500/70 rounded-lg"
+            role="alert"
+            aria-label="Authentication success message"
+            data-testid="auth-success-message"
+          >
             <p className="text-green-200 text-sm font-medium">{success}</p>
           </div>
         )}
@@ -183,6 +207,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors"
                 placeholder="Enter your name"
+                aria-label="Name input"
+                data-testid="name-input"
                 required
               />
             </div>
@@ -199,6 +225,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
               onChange={handleInputChange}
               className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors"
               placeholder="Enter your email"
+              aria-label="Email input"
+              data-testid="email-input"
               required
             />
           </div>
@@ -215,12 +243,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-colors pr-12"
                 placeholder="Enter your password"
+                aria-label="Password input"
+                data-testid="password-input"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                data-testid="password-toggle-button"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -230,6 +262,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
           <button
             type="submit"
             disabled={isLoading}
+            aria-label={isSignUp ? "Submit create account form" : "Submit sign in form"}
+            data-testid="submit-button"
             className="w-full bg-purple-500 hover:bg-purple-600 disabled:bg-purple-300 text-white py-3 rounded-lg font-medium transition-colors"
           >
             {isLoading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
@@ -286,6 +320,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose, isMainLogin = false }) =
               setFormData({ email: '', password: '', name: '' });
             }}
             className="text-purple-400 hover:text-purple-300 font-medium transition-colors mt-1"
+            data-testid="toggle-auth-mode-button"
           >
             {isSignUp ? 'Sign In' : 'Sign Up'}
           </button>
